@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TOTALTAP · Tarjetas NFC para reseñas en Google</title>
+<meta name="description" content="Tarjetas NFC para que tus clientes dejen una reseña en Google con un solo toque.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1F5FB;--surface:#FFFFFF;--ink:#0D1B3E;--muted:#55627F;--line:#D9E1EF;--accent:#2F5BFF;--accent-ink:#FFFFFF;--star:#FFB400;--ok:#0FA67A;--card:#0D1B3E;--card-ink:#FFFFFF;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A1226;--surface:#121C38;--ink:#EAF0FF;--muted:#9AA8C7;--line:#24325A;--accent:#6F8CFF;--accent-ink:#0A1226;--card:#2F5BFF;--card-ink:#FFFFFF;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1226;--surface:#121C38;--ink:#EAF0FF;--muted:#9AA8C7;--line:#24325A;--accent:#6F8CFF;--accent-ink:#0A1226;--card:#2F5BFF;--card-ink:#FFFFFF;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 "Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.05;margin:0;letter-spacing:-.02em}
+h1{font-size:clamp(2.6rem,7vw,5.2rem);font-weight:800}
+h2{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800}
+h3{font-size:1.3rem;font-weight:500;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+section{padding:88px 0}
+.lead{color:var(--muted);max-width:52ch;font-size:1.12rem}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;font:600 1rem "Instrument Sans",sans-serif;padding:15px 26px;border-radius:999px;background:var(--accent);color:var(--accent-ink);text-decoration:none;transition:transform .15s ease,box-shadow .2s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px -10px var(--accent)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font:800 1.35rem "Bricolage Grotesque",sans-serif;text-decoration:none;display:flex;align-items:center;gap:8px;letter-spacing:-.02em}
+.logo i{width:22px;height:22px;border-radius:7px;background:var(--accent);position:relative;display:inline-block}
+.logo i::after{content:"";position:absolute;inset:6px;border:2px solid var(--accent-ink);border-radius:50%;border-left-color:transparent;transform:rotate(-20deg)}
+.links{display:flex;gap:26px;align-items:center}
+.links a{text-decoration:none;font-weight:500;color:var(--muted);transition:color .15s}
+.links a:hover{color:var(--ink)}
+.links .btn{padding:10px 20px;color:var(--accent-ink)}
+@media(max-width:760px){.links a:not(.btn){display:none}}
+
+/* HERO */
+.hero{padding:64px 0 40px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.hero h1{margin-bottom:22px}
+.hero .lead{margin-bottom:32px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.hero-in>*{opacity:0;transform:translateY(18px);animation:up .7s cubic-bezier(.2,.7,.2,1) forwards}
+.hero-in>*:nth-child(2){animation-delay:.12s}.hero-in>*:nth-child(3){animation-delay:.24s}
+@keyframes up{to{opacity:1;transform:none}}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr}}
+
+/* DEMO */
+.stage{position:relative;height:520px;display:grid;place-items:center}
+.phone{position:relative;width:250px;height:480px;border-radius:38px;background:var(--ink);padding:10px;box-shadow:0 40px 70px -30px rgba(13,27,62,.55);transform:rotate(4deg)}
+.screen{position:relative;width:100%;height:100%;border-radius:29px;background:var(--surface);overflow:hidden;color:var(--ink)}
+.idle,.review{position:absolute;inset:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:opacity .4s,transform .5s cubic-bezier(.2,.7,.2,1)}
+.idle{gap:10px;color:var(--muted);font-size:.95rem}
+.waves{position:relative;width:70px;height:70px}
+.waves b{position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);opacity:0}
+.stage.on .waves b{animation:wave 1.4s ease-out infinite}
+.stage.on .waves b:nth-child(2){animation-delay:.45s}.stage.on .waves b:nth-child(3){animation-delay:.9s}
+@keyframes wave{0%{transform:scale(.3);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+.review{opacity:0;transform:translateY(30px);gap:6px;justify-content:flex-start;padding-top:56px}
+.stage.on .review{opacity:1;transform:none}
+.stage.on .idle{opacity:0;transform:scale(.96)}
+.gmark{font:800 1.15rem "Bricolage Grotesque",sans-serif;letter-spacing:-.01em}
+.gmark span:nth-child(1){color:#4285F4}.gmark span:nth-child(2){color:#EA4335}.gmark span:nth-child(3){color:#FBBC05}.gmark span:nth-child(4){color:#4285F4}.gmark span:nth-child(5){color:#34A853}.gmark span:nth-child(6){color:#EA4335}
+.biz{font-weight:600;margin-top:10px}.sub{font-size:.82rem;color:var(--muted)}
+.stars{display:flex;gap:4px;margin:14px 0 10px}
+.stars svg{width:30px;height:30px;fill:var(--line);transition:fill .3s,transform .3s}
+.stage.on .stars svg{fill:var(--star);animation:pop .45s cubic-bezier(.3,1.6,.5,1) both}
+.stage.on .stars svg:nth-child(2){animation-delay:.25s}.stage.on .stars svg:nth-child(3){animation-delay:.5s}.stage.on .stars svg:nth-child(4){animation-delay:.75s}.stage.on .stars svg:nth-child(5){animation-delay:1s}
+@keyframes pop{0%{transform:scale(.3)}100%{transform:scale(1)}}
+.fake{width:100%;height:56px;border-radius:12px;background:var(--bg);border:1px solid var(--line);padding:9px 11px;text-align:left;font-size:.78rem;color:var(--muted)}
+.send{margin-top:10px;width:100%;padding:11px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:.9rem}
+.nfc{position:absolute;left:4%;bottom:34px;width:230px;height:144px;border-radius:18px;background:var(--card);color:var(--card-ink);padding:18px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 24px 40px -18px rgba(13,27,62,.6);transform:rotate(-9deg);transition:transform .9s cubic-bezier(.65,0,.25,1);cursor:pointer;border:0;font:inherit;text-align:left;z-index:3}
+.stage.on .nfc{transform:translate(110px,-170px) rotate(-3deg) scale(.9)}
+.nfc strong{font:800 1.1rem "Bricolage Grotesque",sans-serif}
+.nfc small{opacity:.75;font-size:.75rem}
+.nfc svg{position:absolute;right:16px;top:16px;width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;opacity:.9}
+.hint{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:.88rem;color:var(--muted)}
+@media(max-width:480px){.stage{height:480px}.phone{width:220px;height:430px}.nfc{width:200px;height:126px;left:0}.stage.on .nfc{transform:translate(90px,-150px) rotate(-3deg) scale(.9)}}
+
+/* PASOS */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:48px;border-top:1px solid var(--line)}
+.step{padding:30px 28px 10px 0}
+.step+.step{padding-left:28px;border-left:1px solid var(--line)}
+.step h3{margin:14px 0 8px}
+.step p{color:var(--muted)}
+.step .n{width:40px;height:40px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:800 1.1rem "Bricolage Grotesque",sans-serif}
+@media(max-width:760px){.steps{grid-template-columns:1fr}.step,.step+.step{padding:24px 0;border-left:0;border-bottom:1px solid var(--line)}}
+
+/* BENEFICIOS */
+.ben{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:44px}
+.ben div{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px}
+.ben h3{margin-bottom:8px}.ben p{color:var(--muted)}
+.ben div:nth-child(1){grid-column:span 2;background:var(--accent);color:var(--accent-ink);border:0}
+.ben div:nth-child(1) p{color:inherit;opacity:.88;max-width:56ch}
+.ben div:nth-child(1) h3{font-size:1.8rem}
+@media(max-width:680px){.ben{grid-template-columns:1fr}.ben div:nth-child(1){grid-column:auto}}
+
+/* CALCULADORA */
+.calc{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;margin-top:40px;background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:36px}
+.field{margin-bottom:26px}
+.field label{display:flex;justify-content:space-between;font-weight:600;margin-bottom:10px}
+.field label span{color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+.out{background:var(--bg);border-radius:20px;padding:28px;display:flex;flex-direction:column;justify-content:center}
+.big{font:800 clamp(3.4rem,8vw,5.4rem)/1 "Bricolage Grotesque",sans-serif;color:var(--accent);letter-spacing:-.03em}
+.out p{color:var(--muted);margin-top:8px}
+@media(max-width:760px){.calc{grid-template-columns:1fr;padding:24px}}
+
+/* PRECIOS */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px;align-items:stretch}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px;display:flex;flex-direction:column;gap:14px}
+.plan.hot{border:2px solid var(--accent);box-shadow:0 24px 50px -30px var(--accent)}
+.price{font:800 2.6rem "Bricolage Grotesque",sans-serif;letter-spacing:-.03em}
+.price small{font:500 .95rem "Instrument Sans",sans-serif;color:var(--muted);letter-spacing:0}
+.plan ul{list-style:none;padding:0;margin:0 0 8px;display:grid;gap:9px;color:var(--muted);flex:1}
+.plan li::before{content:"✓";color:var(--ok);font-weight:700;margin-right:10px}
+.tag{align-self:flex-start;background:var(--accent);color:var(--accent-ink);font-size:.8rem;font-weight:600;padding:4px 12px;border-radius:999px}
+@media(max-width:860px){.plans{grid-template-columns:1fr}}
+
+/* FAQ */
+details{border-bottom:1px solid var(--line);padding:20px 0}
+summary{cursor:pointer;font:500 1.2rem "Bricolage Grotesque",sans-serif;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:1.6rem;line-height:1;color:var(--accent);transition:transform .3s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--muted);margin-top:12px;max-width:62ch}
+
+/* CONTACTO */
+.contact{background:var(--ink);color:var(--bg);border-radius:32px;padding:56px;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+:root[data-theme="dark"] .contact,:root:not([data-theme="light"]) .contact{--cbg:#121C38}
+.contact h2{color:#fff}.contact .lead{color:#B8C4E2}
+form{display:grid;gap:14px}
+input,select,textarea{width:100%;font:inherit;padding:14px 16px;border-radius:14px;border:1.5px solid #34457A;background:rgba(255,255,255,.06);color:#fff}
+input::placeholder,textarea::placeholder{color:#8E9CC0}
+select option{color:#0D1B3E}
+input:focus,select:focus,textarea:focus{outline:3px solid #6F8CFF;border-color:transparent}
+.contact .btn{background:#fff;color:#0D1B3E;justify-content:center}
+.msg{min-height:1.4em;color:#7FE3C0;font-weight:500}
+@media(max-width:820px){.contact{grid-template-columns:1fr;padding:32px 24px}}
+footer{padding:36px 0 56px;color:var(--muted);font-size:.9rem}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.hero-in>*{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <a class="logo" href="#top"><i></i>TOTALTAP</a>
+  <div class="links"><a href="#como">Cómo funciona</a><a href="#calculadora">Calculadora</a><a href="#precios">Precios</a><a href="#faq">Preguntas</a><a class="btn" href="#contacto">Pedir tarjetas</a></div>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+  <div class="hero-in">
+    <h1>Un toque, y tu comercio suma otra reseña en Google.</h1>
+    <p class="lead">Tarjetas NFC que llevan a tus clientes directos a tu ficha de Google. Sin apps, sin buscar tu negocio, sin escribir nada de más.</p>
+    <div class="cta"><a class="btn" href="#contacto">Pedir mis tarjetas</a><a class="btn ghost" href="#calculadora">Calcular mis reseñas</a></div>
+  </div>
+  <div class="stage" id="stage" aria-label="Demostración de una tarjeta TOTALTAP">
+    <div class="phone"><div class="screen">
+      <div class="idle"><div class="waves"><b></b><b></b><b></b></div><p>Esperando una tarjeta…</p></div>
+      <div class="review" aria-hidden="true">
+        <div class="gmark"><span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span></div>
+        <div class="biz">Café Margarita</div><div class="sub">Comparte tu opinión</div>
+        <div class="stars"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z"/></svg></div>
+        <div class="fake">Un café excelente y un trato de diez.</div>
+        <div class="send">Publicar</div>
+      </div>
+    </div></div>
+    <button class="nfc" id="card" type="button" aria-label="Acercar la tarjeta al móvil">
+      <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 010 8M10 5.5a10 10 0 010 13M14 3a14 14 0 010 18"/></svg>
+      <strong>TOTALTAP</strong><small>Toca aquí y deja tu reseña</small>
+    </button>
+    <p class="hint" id="hint">Toca la tarjeta para verla en acción</p>
+  </div>
+</div></header>
+
+<section id="como"><div class="wrap">
+  <h2>Así de simple para tus clientes.</h2>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><h3>Colocas la tarjeta</h3><p>En el mostrador, en la mesa o junto a la caja. Va programada con el enlace directo a tus reseñas.</p></div>
+    <div class="step"><div class="n">2</div><h3>El cliente acerca el móvil</h3><p>Funciona con iPhone y la mayoría de Android. No necesita instalar nada.</p></div>
+    <div class="step"><div class="n">3</div><h3>Elige estrellas y publica</h3><p>Se abre tu ficha de Google lista para valorar. Tu reputación crece con cada visita.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <h2>Pensado para comercios con prisa.</h2>
+  <div class="ben">
+    <div><h3>Más reseñas sin pedirlas con la voz</h3><p>Muchos clientes están contentos pero se olvidan de valorar. Con un toque de por medio, lo hacen en el momento, cuando la experiencia sigue fresca.</p></div>
+    <div><h3>Sin suscripciones</h3><p>Pagas la tarjeta una vez. El enlace se queda programado para siempre.</p></div>
+    <div><h3>Con tu marca</h3><p>Diseño personalizado con tu logo y tus colores.</p></div>
+  </div>
+</div></section>
+
+<section id="calculadora" style="padding-top:0"><div class="wrap">
+  <h2>¿Cuántas reseñas puedes sumar?</h2>
+  <p class="lead" style="margin-top:14px">Mueve los controles con los datos de tu negocio. Es una estimación orientativa.</p>
+  <div class="calc">
+    <div>
+      <div class="field"><label for="vis">Clientes al día <span id="visV">60</span></label><input id="vis" type="range" min="5" max="300" value="60"></div>
+      <div class="field"><label for="pct">Que acaban tocando la tarjeta <span id="pctV">10%</span></label><input id="pct" type="range" min="2" max="40" value="10"></div>
+      <div class="field" style="margin:0"><label for="dias">Días abiertos al mes <span id="diasV">26</span></label><input id="dias" type="range" min="10" max="31" value="26"></div>
+    </div>
+    <div class="out"><div class="big" id="res" aria-live="polite">156</div><p>reseñas nuevas al mes en Google</p></div>
+  </div>
+</div></section>
+
+<section id="precios" style="padding-top:0"><div class="wrap">
+  <h2>Elige tu pack.</h2>
+  <div class="plans">
+    <div class="plan"><h3>Inicio</h3><div class="price">29€ <small>pago único</small></div><ul><li>1 tarjeta NFC</li><li>Enlace a tu ficha de Google</li><li>Envío en 48–72 h</li></ul><a class="btn ghost" href="#contacto" data-plan="Inicio">Pedir Inicio</a></div>
+    <div class="plan hot"><span class="tag">El más elegido</span><h3>Negocio</h3><div class="price">79€ <small>pago único</small></div><ul><li>3 tarjetas NFC con tu logo</li><li>Diseño con tus colores</li><li>Soporte de configuración</li></ul><a class="btn" href="#contacto" data-plan="Negocio">Pedir Negocio</a></div>
+    <div class="plan"><h3>Cadena</h3><div class="price">A medida</div><ul><li>Desde 10 tarjetas</li><li>Un enlace por cada local</li><li>Precio por volumen</li></ul><a class="btn ghost" href="#contacto" data-plan="Cadena">Pedir presupuesto</a></div>
+  </div>
+</div></section>
+
+<section id="faq" style="padding-top:0"><div class="wrap" style="max-width:820px">
+  <h2 style="margin-bottom:24px">Preguntas frecuentes</h2>
+  <details><summary>¿Necesitan los clientes una app?</summary><p>No. El móvil lee la tarjeta por NFC y abre el navegador con tu ficha de Google.</p></details>
+  <details><summary>¿Funciona con todos los móviles?</summary><p>Con todos los iPhone desde el modelo XS y con casi todos los Android con NFC activado.</p></details>
+  <details><summary>¿Puedo cambiar el enlace más adelante?</summary><p>Sí. Si cambias de local o de ficha, te ayudamos a reprogramar la tarjeta.</p></details>
+  <details><summary>¿Cuánto tarda en llegar el pedido?</summary><p>Preparamos y enviamos en 48–72 horas laborables tras confirmar tu pedido.</p></details>
+</div></section>
+
+<section id="contacto" style="padding-top:0"><div class="wrap">
+  <div class="contact">
+    <div><h2>Pide tus tarjetas TOTALTAP.</h2><p class="lead" style="margin-top:16px">Cuéntanos qué negocio tienes y te respondemos con tu propuesta.</p></div>
+    <form id="form">
+      <input name="nombre" placeholder="Tu nombre" required aria-label="Tu nombre" autocomplete="name">
+      <input name="negocio" placeholder="Nombre del comercio" required aria-label="Nombre del comercio">
+      <input name="email" type="email" placeholder="Correo electrónico" required aria-label="Correo electrónico" autocomplete="email">
+      <select name="plan" id="plan" aria-label="Pack"><option>Inicio</option><option selected>Negocio</option><option>Cadena</option></select>
+      <textarea name="nota" rows="3" placeholder="Enlace de tu ficha de Google (opcional)" aria-label="Notas"></textarea>
+      <button class="btn" type="submit">Enviar pedido</button>
+      <p class="msg" id="msg" role="status"></p>
+    </form>
+  </div>
+</div></section>
+
+<footer><div class="wrap"><span>© 2026 TOTALTAP</span><span>Tarjetas NFC para reseñas en Google</span></div></footer>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage'),card=document.getElementById('card'),hint=document.getElementById('hint'),t;
+  function play(){
+    stage.classList.add('on');hint.textContent='¡Listo! Así ve tu cliente tu ficha de Google';
+    clearTimeout(t);t=setTimeout(function(){stage.classList.remove('on');hint.textContent='Toca la tarjeta para verla en acción'},6500);
+  }
+  card.addEventListener('click',function(){stage.classList.contains('on')?(clearTimeout(t),stage.classList.remove('on'),hint.textContent='Toca la tarjeta para verla en acción'):play()});
+  setTimeout(play,1600);
+
+  var vis=document.getElementById('vis'),pct=document.getElementById('pct'),dias=document.getElementById('dias'),res=document.getElementById('res'),cur=156,raf;
+  function calc(){
+    document.getElementById('visV').textContent=vis.value;
+    document.getElementById('pctV').textContent=pct.value+'%';
+    document.getElementById('diasV').textContent=dias.value;
+    var to=Math.round(vis.value*dias.value*pct.value/100),from=cur,s=performance.now();
+    cancelAnimationFrame(raf);
+    (function step(n){var k=Math.min((n-s)/450,1),e=1-Math.pow(1-k,3);cur=Math.round(from+(to-from)*e);res.textContent=cur.toLocaleString('es-ES');if(k<1)raf=requestAnimationFrame(step)})(s);
+  }
+  [vis,pct,dias].forEach(function(i){i.addEventListener('input',calc)});calc();
+
+  document.querySelectorAll('[data-plan]').forEach(function(a){a.addEventListener('click',function(){document.getElementById('plan').value=a.dataset.plan})});
+
+  document.getElementById('form').addEventListener('submit',function(e){
+    e.preventDefault();var f=new FormData(e.target);
+    var body='Nombre: '+f.get('nombre')+'\nComercio: '+f.get('negocio')+'\nCorreo: '+f.get('email')+'\nPack: '+f.get('plan')+'\nFicha de Google: '+(f.get('nota')||'-');
+    location.href='mailto:hola@totaltap.com?subject='+encodeURIComponent('Pedido TOTALTAP – '+f.get('negocio'))+'&body='+encodeURIComponent(body);
+    document.getElementById('msg').textContent='Se abrió tu correo con el pedido. Solo falta pulsar enviar.';
+  });
+})();
+</script>
+</body>
+</html>
